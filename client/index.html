@@ -1,0 +1,160 @@
+<html>
+  <head>
+	<title>
+		Advertisement Validator
+	</title>
+	<script type="text/javascript" src="hasit.js"></script>
+    <script type="text/javascript" src="aws-sdk.js"></script>
+    <style type="text/css">
+	.btn {
+	  background: #3498db;
+	  background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
+	  background-image: -moz-linear-gradient(top, #3498db, #2980b9);
+	  background-image: -ms-linear-gradient(top, #3498db, #2980b9);
+	  background-image: -o-linear-gradient(top, #3498db, #2980b9);
+	  background-image: linear-gradient(to bottom, #3498db, #2980b9);
+	  font-family: Arial;
+	  color: #ffffff;
+	  font-size: 20px;
+	  padding: 10px 20px 10px 20px;
+	  text-decoration: none;
+	}
+
+	.btn:hover {
+	  background: #3cb0fd;
+	  background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
+	  background-image: -moz-linear-gradient(top, #3cb0fd, #3498db);
+	  background-image: -ms-linear-gradient(top, #3cb0fd, #3498db);
+	  background-image: -o-linear-gradient(top, #3cb0fd, #3498db);
+	  background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+	  text-decoration: none;
+	}
+	</style>
+  </head>
+
+  <body>
+    <center>
+    <img id="image-upload" src="upload.png" style="height: 90% fixed"> </img> <br/>
+    <input type="file" id="file-chooser" accept="image/jpg, image/png" style="display: none"/>
+    <br/>
+    <button id="upload-button" class="btn">Upload Image</button>
+    </center>
+    
+
+    <script>
+	let image = document.getElementById('image-upload');
+	
+	var payloadImage;
+
+	if (window.FileReader) {
+      function handleFileSelect(evt) {
+        var files = evt.target.files;
+        var f = files[0];
+        var reader = new FileReader();
+		
+          reader.onload = (function(theFile) {
+            return function(e) {
+              image.src = e.target.result; //,'" title="', theFile.name, '" />'].join('');
+              payloadImage = e.target.result;
+            };
+          })(f);
+    
+          reader.readAsDataURL(f);
+          image.style.height ="80%";
+      }
+	 } else {
+	  alert('This browser does not support FileReader');
+	}
+    
+	let fileChooser = document.getElementById('file-chooser');
+	
+	image.addEventListener('click', function() {
+		fileChooser.click();
+	}
+	);
+	
+	fileChooser.addEventListener('change', handleFileSelect, false);
+
+    // Grab a reference to the upload button
+    let uploadButton = document.getElementById('upload-button');
+
+    // Make the button respond to clicks
+    uploadButton.addEventListener('click', function() {
+		
+      let file = fileChooser.files[0];
+
+	/*AWS.config.update({region: 'ap-northeast-2',
+		credentials: new AWS.CognitoIdentityCredentials({
+		IdentityPoolId: 'ap-northeast-2:90d17ad1-7f2d-4067-9c88-270aba3b9c2e',
+		})
+	});*/
+	
+	AWS.config.update(
+		{	region: 'ap-northeast-2', 
+			accessKeyId: hasitAccessId, 
+			secretAccessKey: hasitSecretAccessKey
+		}
+	);
+
+	//AWS.config.credentials = new AWS.CognitoIdentityCredentials({IdentityPoolId: 'ap-northeast-2:90d17ad1-7f2d-4067-9c88-270aba3b9c2e'});
+	
+	/*var creds = AWS.Credentials();
+	creds.accessKeyId = 'AKIAIJ7HOPMH23VHN3YA';
+	creds.secretAccessKey = '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';
+
+	AWS.config.credentials = creds;*/
+
+	//alert(AWS.config.credentials);
+      
+    // Initialize the Amazon Cognito credentials provider
+	var lambda = new AWS.Lambda();
+
+      // Check that the user has specified a file to upload
+      if (!file) {
+        alert("You must choose a file to upload!");
+        return;
+      }
+
+      // Check the MIME type is an image
+      if (file.type.indexOf("image") == -1) {
+        alert("You may only upload images");
+        return;
+      }
+      
+      //alert(payloadImage.toString());
+      
+      var d64 = payloadImage.toString();
+      
+      alert(d64);
+      
+      var pullParams = {
+	//FunctionName : 'arn:aws:lambda:ap-northeast-2:269511528505:function:HelloWorld',
+	FunctionName : 'AdValidator',
+	InvocationType : 'RequestResponse',
+	Payload : '{"image":"' + d64 + '"}',
+	LogType : 'None'
+	};
+	
+	//alert(pullParams.data);
+	var pullResults;
+	
+		//alert(AWS.config.credentials.toString());
+
+      lambda.invoke(pullParams, function(error, data) {
+		  if (error) {
+			  alert("locho...");
+			  prompt(error);
+		} else {
+			pullResults = JSON.parse(data.Payload);
+			//pullResults = data;
+			alert(pullResults);
+		}}
+	  );
+	  
+	  
+	}
+  );
+
+    </script>
+  </body>
+</html>
