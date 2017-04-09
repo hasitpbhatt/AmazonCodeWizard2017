@@ -83,28 +83,12 @@
 		
       let file = fileChooser.files[0];
 
-	/*AWS.config.update({region: 'ap-northeast-2',
-		credentials: new AWS.CognitoIdentityCredentials({
-		IdentityPoolId: 'ap-northeast-2:90d17ad1-7f2d-4067-9c88-270aba3b9c2e',
-		})
-	});*/
-	
 	AWS.config.update(
 		{	region: 'ap-northeast-2', 
 			accessKeyId: hasitAccessId, 
 			secretAccessKey: hasitSecretAccessKey
 		}
 	);
-
-	//AWS.config.credentials = new AWS.CognitoIdentityCredentials({IdentityPoolId: 'ap-northeast-2:90d17ad1-7f2d-4067-9c88-270aba3b9c2e'});
-	
-	/*var creds = AWS.Credentials();
-	creds.accessKeyId = 'AKIAIJ7HOPMH23VHN3YA';
-	creds.secretAccessKey = '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';
-
-	AWS.config.credentials = creds;*/
-
-	//alert(AWS.config.credentials);
       
     // Initialize the Amazon Cognito credentials provider
 	var lambda = new AWS.Lambda();
@@ -121,8 +105,6 @@
         return;
       }
       
-      //alert(payloadImage.toString());
-      
       var d64 = payloadImage.toString();
       
       alert(d64);
@@ -135,10 +117,7 @@
 	LogType : 'None'
 	};
 	
-	//alert(pullParams.data);
 	var pullResults;
-	
-		//alert(AWS.config.credentials.toString());
 
       lambda.invoke(pullParams, function(error, data) {
 		  if (error) {
@@ -146,7 +125,6 @@
 			  prompt(error);
 		} else {
 			pullResults = JSON.parse(data.Payload);
-			//pullResults = data;
 			alert(pullResults);
 		}}
 	  );
